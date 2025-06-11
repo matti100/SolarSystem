@@ -15,6 +15,21 @@ f = gcf;
 f.Color = 'black';
 f.Position = [0, 0, 1000, 700];
 
+% Annotation
+ann = findall(f, 'Type', 'textboxshape');
+if ~isempty(ann)
+    for i = 1:size(ann, 1)
+        ann(i).Color = 'white';
+        ann(i).FontName = fontName;
+        ann(i).FontSize = 15;
+        ann(i).FontWeight = 'bold';
+        ann(i).HorizontalAlignment = 'center';
+        ann(i).VerticalAlignment = 'middle';
+        ann(i).FitBoxToText = 'on';
+        ann(i).Position = [-0.175, 0.85, 0.5, 0.2];
+    end
+end
+
 %% Style axes
 ax = gca;
 

@@ -14,19 +14,19 @@ frame = 1;          % 1: Solar system baricenter
 plot_flag = 1;      % 1: plot
                     % 0: no plot
 
-animation_flag = 1; % 1: animation
+animation_flag = 0; % 1: animation
                     % 0: no animation
 
-onlyEarth_flag = 1; % 1: plot only earth
+onlyEarth_flag = 0; % 1: plot only earth
                     % 0: plot all bodies
 
-onlyIC_flag = 0;    % 1: extract only IC
+onlyIC_flag = 1;    % 1: extract only IC
                     % 0: extract all the ephemeris
 
 
 % Time Interval for simulation
 startTime = '2026-May-5';
-stopTime = '2027-May-19';
+stopTime = '2030-May-19';
 
 startDateObj = datetime(startTime, 'InputFormat', 'yyyy-MMMM-d');
 endDateObj = datetime(stopTime, 'InputFormat', 'yyyy-MMMM-d');
@@ -78,7 +78,7 @@ G = G_standard / (1000)^3 * (24*60*60)^2; % [ km^3 / kg / day^2 ]
 % Astronomic Unit
 AU = 149597870707 * 1e-3; % [km]
 
-%% INITIALIZE PROBLEM
+%% PROBLEM INITIALIZATION
 
 % Tspan
 tspan = endDateObj - startDateObj;
@@ -140,6 +140,9 @@ if plot_flag
     if onlyEarth_flag
 
         figure('Name', 'Plots - Earth');
+        % Annotation
+        annotation('textbox', ...
+            'String', sprintf("Start Date: %s\nEnd Date: %s", startTime, stopTime));
 
         if onlyIC_flag == 0
 
@@ -157,8 +160,10 @@ if plot_flag
             plot3(Trajectory.Earth(1, end), Trajectory.Earth(2, end), Trajectory.Earth(3, end),...
                 'Marker', 'o', ...
                 'MarkerEdgeColor', bodyColors{4}, 'MarkerFaceColor', bodyColors{4});
-            % Text
-            text(Trajectory.Earth(1, end), Trajectory.Earth(2, end), Trajectory.Earth(3, end) + bodyRadius(4), ...
+            % Body Text
+            text(Trajectory.Earth(1, end) + bodyRadius(4)*markersize*50,...
+                Trajectory.Earth(2, end) + bodyRadius(4)*markersize*50, ...
+                Trajectory.Earth(3, end) + bodyRadius(4)*markersize*50, ...
                 bodyNames{4}, 'Color', bodyColors{4}, ...
                 'EdgeColor', bodyColors{4});
 
@@ -190,8 +195,10 @@ if plot_flag
         plot3(x(idx, end), x(idx+1, end), x(idx+2, end), ...
             'Marker', 'o',...
             'MarkerEdgeColor', bodyColors{4}, 'MarkerFaceColor', bodyColors{4});
-        % Text
-        text(x(idx,end), x(idx+1,end), x(idx+2,end) + bodyRadius(4), ...
+        % Body Text
+        text(x(idx,end) + bodyRadius(4)*markersize*50, ...
+            x(idx+1,end) + bodyRadius(4)*markersize*50, ...
+            x(idx+2,end) + bodyRadius(4)*markersize*50, ...
             bodyNames{4}, 'Color', bodyColors{4}, ...
             'EdgeColor', bodyColors{4});
 
@@ -209,6 +216,9 @@ if plot_flag
         % ========= ALL BODIES ========= %
         % ============================== %
         figure('Name', 'Plots - all bodies');
+        % Annotation
+        annotation('textbox', ...
+            'String', sprintf("Start Date: %s\nEnd Date: %s", startTime, stopTime));
         Traj = [];
         hold on;
         view(3);
@@ -249,7 +259,9 @@ if animation_flag
         idx = 6*(4-1)+1; % Earth index
 
         figure('Name', 'Animation - Earth');
-        set(gcf, 'Color', 'k'); % black figure background
+        % Annotation
+        annotation('textbox', ...
+            'String', sprintf("Start Date: %s\nEnd Date: %s", startTime, stopTime));
         
         if onlyIC_flag == 0
             % Ephemeris objects initializations

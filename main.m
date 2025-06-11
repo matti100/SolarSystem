@@ -373,7 +373,7 @@ if animation_flag
             drawnow;
 
             % Pause for a better visualization
-            pause(0.005);
+            pause(0.05);
         end
 
     else

@@ -14,22 +14,19 @@ frame = 1;          % 1: Solar system baricenter
 plot_flag = 1;      % 1: plot
                     % 0: no plot
 
-animation_flag = 0; % 1: animation
+animation_flag = 1; % 1: animation
                     % 0: no animation
 
-onlyEarth_flag = 0; % 1: plot only earth
+onlyEarth_flag = 1; % 1: plot only earth
                     % 0: plot all bodies
 
-onlyIC_flag = 1;    % 1: extract only IC
+onlyIC_flag = 0;    % 1: extract only IC
                     % 0: extract all the ephemeris
-
-sphere_flag = 0;    % 1: plot sphere
-                    % 0: no sphere
 
 
 % Time Interval for simulation
 startTime = '2026-May-5';
-stopTime = '2030-May-19';
+stopTime = '2027-May-19';
 
 startDateObj = datetime(startTime, 'InputFormat', 'yyyy-MMMM-d');
 endDateObj = datetime(stopTime, 'InputFormat', 'yyyy-MMMM-d');
@@ -71,11 +68,8 @@ bodyNames = {'Sun', 'Mercury', 'Venus', 'Earth', 'Mars', 'Jupiter',...
 bodyColors = {'#EDB120', '#D95319', '#77AC30', '#0072BD', '#A2142F',...
     '#7E2F8E', 'y', 'c', 'b'};
 
-bodyRadius = [696000, 2440, 6052, 6371, 3390, 69911, 58232, 25362, 24622]; % [km]
-scaleFactor = [20, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000];
-% scaleFactor = ones(9,1);
-bodySize = bodyRadius .* scaleFactor;
-[bodyR, bodyPhi, bodyTheta] = sphere(20);  % represent the single body (planet, sun ecc) as a sphere
+bodyRadius = [696000, 2440, 6052, 6371, 3390, 69911, 58232, 25362, 24622] ./ 1e3; % [km]
+bodySize = 20.*ones(9, 1);
 
 % Universal gravitational constant
 G_standard = 6.67430e-11; % [ m^3 / kg / s^2 ]
@@ -148,136 +142,101 @@ if plot_flag
         figure('Name', 'Plots - Earth');
 
         if onlyIC_flag == 0
-            ax_ephem = subplot(2,1,1);
-            hold(ax_ephem, 'on');
-            % Trajectory
-            plot3(Trajectory.Earth(1, :), Trajectory.Earth(2, :), Trajectory.Earth(3, :),...
-                'LineWidth', linewidth, 'Color', bodyColors{4});
 
-            if sphere_flag
-            % Body
-            % compute sphere
-            [X, Y, Z] = createBody(bodyR, bodyPhi, bodyTheta, bodySize(4), ...
-                [Trajectory.Earth(1, end), Trajectory.Earth(2, end), Trajectory.Earth(3, end)]);
-            % plot sphere
-            surf(X, Y, Z, 'FaceColor', bodyColors{4}, 'EdgeColor', 'none');
-            % add name text
-            text(Trajectory.Earth(1, end), Trajectory.Earth(2, end), Trajectory.Earth(3, end) + bodySize(4)*1.2, ...
-                bodyNames{4}, 'Color', bodyColors{4}, ...
-                'FontSize', 10, 'HorizontalAlignment', 'center');
-            end
-            hold(ax_ephem, 'off');
+            % ============================= %
+            % ===== EARTH - EPHEMERIS ===== %
+            % ============================= %
+            ax_ephem = subplot(2,1,1);
             view(ax_ephem, 3);
+            hold(ax_ephem, 'on');
+
+            % Trajectory
+            traj = plot3(Trajectory.Earth(1, :), Trajectory.Earth(2, :), Trajectory.Earth(3, :),...
+                'LineWidth', linewidth, 'Color', bodyColors{4});
+            % Body
+            plot3(Trajectory.Earth(1, end), Trajectory.Earth(2, end), Trajectory.Earth(3, end),...
+                'Marker', 'o', ...
+                'MarkerEdgeColor', bodyColors{4}, 'MarkerFaceColor', bodyColors{4});
+            % Text
+            text(Trajectory.Earth(1, end), Trajectory.Earth(2, end), Trajectory.Earth(3, end) + bodyRadius(4), ...
+                bodyNames{4}, 'Color', bodyColors{4}, ...
+                'EdgeColor', bodyColors{4});
+
+            hold(ax_ephem, 'off');
 
             % Options
             xlabel('X [km]'); ylabel('Y [km]'); zlabel('Z [km]');
-            title('Trajectory - ephem', 'color', 'w');
-            grid on;
-            leg = legend('Earth trajectory');
-            set(gca, 'Color', 'k');            % black background
-            set(gcf, 'Color', 'k');            % black background of the figure
-            set(gca, 'XColor', 'w', 'YColor', 'w', 'ZColor', 'w'); % white axes
-            set(gca, 'GridColor', 'w');        % white grid
-            set(leg, 'TextColor', 'w');        % white legend
-            set(leg, 'EdgeColor', 'w');
-            set(leg, 'Color', 'k');
-            if sphere_flag
-            axis equal
-            axis tight
-            camlight
-            lighting gouraud
-            end
+            title('Trajectory - ephem');
+            legend(traj, 'Earth trajectory');
+            stylePlot();
         end
 
+        % ============================== %
+        % ======= EARTH - SOLVED ======= %
+        % ============================== %
         if onlyIC_flag == 0
             ax_sol = subplot(2,1,2);
         else
-            ax_sol = axes('Position', [0.05 0.1 0.9 0.8]); % [left bottom width height]
+            ax_sol = axes(); % [left bottom width height]
         end
-        idx = 6*(4-1)+1; % Earth index
-        hold(ax_sol, 'on');
-        % Trajectory
-        plot3(x(idx, :), x(idx+1, :), x(idx+2, :), 'LineWidth', linewidth, ...
-            'Color', bodyColors{4});
-        
-        if sphere_flag
-        % Body
-        % compute sphere
-        [X, Y, Z] = createBody(bodyR, bodyPhi, bodyTheta, bodySize(4), ...
-            [x(idx, end), x(idx+1, end), x(idx+2, end)]);
-        % plot sphere
-        surf(X, Y, Z, 'FaceColor', bodyColors{4}, 'EdgeColor', 'none');
-        % add name text
-        text(x(idx,end), x(idx+1,end), x(idx+2,end) + bodySize(4)*1.2, ...
-            bodyNames{4}, 'Color', bodyColors{4}, ...
-            'FontSize', 10, 'HorizontalAlignment', 'center');
-        end
-        hold(ax_sol, 'off');
         view(ax_sol, 3);
+        hold(ax_sol, 'on');
+
+        idx = 6*(4-1)+1; % Earth index
+        % Trajectory
+        traj = plot3(x(idx, :), x(idx+1, :), x(idx+2, :), 'LineWidth', linewidth, ...
+            'Color', bodyColors{4});
+        % Body
+        plot3(x(idx, end), x(idx+1, end), x(idx+2, end), ...
+            'Marker', 'o',...
+            'MarkerEdgeColor', bodyColors{4}, 'MarkerFaceColor', bodyColors{4});
+        % Text
+        text(x(idx,end), x(idx+1,end), x(idx+2,end) + bodyRadius(4), ...
+            bodyNames{4}, 'Color', bodyColors{4}, ...
+            'EdgeColor', bodyColors{4});
+
+        hold(ax_sol, 'off');
 
         % Options
         xlabel('X [km]'); ylabel('Y [km]'); zlabel('Z [km]');
-        title('Trajectory - solved', 'color', 'w');
-        grid on;
-        leg = legend('Earth trajectory');
-        set(gca, 'Color', 'k');            % black background
-        set(gcf, 'Color', 'k');            % black background of the figure
-        set(gca, 'XColor', 'w', 'YColor', 'w', 'ZColor', 'w'); % white axes
-        set(gca, 'GridColor', 'w');        % white grid
-        set(leg, 'TextColor', 'w');        % white legend
-        set(leg, 'EdgeColor', 'w');
-        set(leg, 'Color', 'k');
-        if sphere_flag
-        axis equal
-        axis tight
-        camlight
-        lighting gouraud
-        end
+        title('Trajectory - solved');
+        legend(traj, 'Earth trajectory');
+        stylePlot();
 
     else
 
+        % ============================== %
+        % ========= ALL BODIES ========= %
+        % ============================== %
         figure('Name', 'Plots - all bodies');
-        % axes('Position', [0.05 0.1 0.9 0.8]); % [left bottom width height]
         Traj = [];
         hold on;
         view(3);
+
         for i = 1:N
             j = 6*(i-1) + 1;
+
             % Trajectory
             traj = plot3(x(j, :), x(j+1, :), x(j+2, :), 'LineWidth', linewidth, ...
                 'Color', bodyColors{i});
             Traj = [Traj; traj];
-            
-            if sphere_flag
             % Body
-            [X, Y, Z] = createBody(bodyR, bodyPhi, bodyTheta, bodySize(i), ...
-                [x(j, end), x(j+1, end), x(j+2, end)]);
-            surf(X, Y, Z, 'FaceColor', bodyColors{i}, 'EdgeColor', 'none');
-            text(x(j,end), x(j+1,end), x(j+2,end) + bodySize(i)*1.2, ...
+            plot3(x(j, end), x(j+1, end), x(j+2, end), ...
+                'Marker', 'o', ...
+                'MarkerEdgeColor', bodyColors{i}, 'MarkerFaceColor', bodyColors{i});
+            % Text
+            text(x(j,end), x(j+1,end), x(j+2,end) + bodyRadius(i)*1.2, ...
                 bodyNames{i}, 'Color', bodyColors{i}, ...
-                'FontSize', 10, 'HorizontalAlignment', 'center');
-            end
+                'EdgeColor', bodyColors{4});
+
         end
         hold off;
 
         % Options
         title('Trajectory - all bodies');
         xlabel('X [km]'); ylabel('Y [km]'); zlabel('Z [km]');
-        grid on;
         leg = legend(Traj, bodyNames);
-        set(gca, 'Color', 'k');            % black background
-        set(gcf, 'Color', 'k');            % black background of the figure
-        set(gca, 'XColor', 'w', 'YColor', 'w', 'ZColor', 'w'); % white axes
-        set(gca, 'GridColor', 'w');        % white grid
-        set(leg, 'TextColor', 'w');        % white legend
-        set(leg, 'EdgeColor', 'w');
-        set(leg, 'Color', 'k');
-        if sphere_flag
-        axis equal
-        axis tight
-        camlight
-        lighting gouraud
-        end
+        stylePlot();
     end
 
 end
@@ -295,71 +254,77 @@ if animation_flag
         if onlyIC_flag == 0
             % Ephemeris objects initializations
             ax_ephem = subplot(2,1,1);
-            ax_sol = subplot(2,1,2);
-
+            view(ax_ephem, 3);
             hold(ax_ephem, 'on');
+
             % Pre-allocate trajectory graphic object
             h_plot_ephem = plot3(ax_ephem, NaN, NaN, NaN, 'LineWidth', linewidth, 'Color', bodyColors{4});
-            if sphere_flag
-            % Pre-allocate Earth surface graphic object
-            h_surf_ephem = surf(ax_ephem, NaN(2), NaN(2), NaN(2), 'FaceColor', bodyColors{4}, 'EdgeColor', 'none');
+            % Pre-allocate marker graphic object
+            h_body_ephem = plot3(ax_ephem, NaN, NaN, NaN, ...
+                'Marker', 'o', 'MarkerSize', markersize, ...
+                'MarkerEdgeColor', bodyColors{4}, 'MarkerFaceColor', bodyColors{4});
             % Pre-allocate text graphic object
             h_text_ephem = text(ax_ephem, NaN, NaN, NaN + bodySize(4)*1.2, ...
-                            bodyNames{4}, 'Color', bodyColors{4}, ...
-                            'FontSize', 10, 'HorizontalAlignment', 'center');
-            end
+                bodyNames{4}, 'Color', bodyColors{4}, ...
+                'EdgeColor', bodyColors{4});
+            stylePlot(ax_ephem);
+
             hold(ax_ephem, 'off');
+
             % Options - ephemeris
             xlabel(ax_ephem, 'X [km]'); ylabel(ax_ephem, 'Y [km]'); zlabel(ax_ephem, 'Z [km]');
             title(ax_ephem, 'Trajectory - ephem', 'color', 'w');
-            stylePlot(ax_ephem, onlyEarth_flag, sphere_flag);
-            % xmin = min(Trajectory.Earth(1, 1));
-            % xmax = max(Trajectory.Earth(1, 1));
-            % ymin = min(Trajectory.Earth(2, 1));
-            % ymax = max(Trajectory.Earth(2, 1));
-            % zmin = min(Trajectory.Earth(3, 1));
-            % zmax = max(Trajectory.Earth(3, 1));
-            % xlim(ax_ephem, [xmin xmax]);
-            % ylim(ax_ephem, [ymin ymax]);
-            % zlim(ax_ephem, [zmin zmax]);
+            xmin = min(Trajectory.Earth(1, :));
+            xmax = max(Trajectory.Earth(1, :));
+            ymin = min(Trajectory.Earth(2, :));
+            ymax = max(Trajectory.Earth(2, :));
+            zmin = min(Trajectory.Earth(3, :));
+            zmax = max(Trajectory.Earth(3, :));
+            xlim(ax_ephem, [xmin xmax + 1000]);
+            ylim(ax_ephem, [ymin ymax + 1000]);
+            zlim(ax_ephem, [zmin zmax + 1000]);
 
             % Initialize trajectory vector;
             rx = [];
             ry = [];
             rz = [];
 
-            view(ax_ephem, 3);
+
+            ax_sol = subplot(2,1,2);
         else
-            ax_sol = gca;
+            ax_sol = axes();
         end
-        view(ax_sol, 3);
 
         % Solved solution objects initialization
+        view(ax_sol, 3);
         hold(ax_sol, 'on');
+
         % Pre-allocate trajectory graphic object
         h_plot_sol = plot3(ax_sol, NaN, NaN, NaN, 'LineWidth', linewidth, 'Color', bodyColors{4});
-        if sphere_flag
-        % Pre-allocate Earth surface graphic object
-        h_surf_sol = surf(ax_sol, NaN(2), NaN(2), NaN(2), 'FaceColor', bodyColors{4}, 'EdgeColor', 'none');
+        % Pre-allocate marker graphic object
+        h_body_sol = plot3(ax_sol, NaN, NaN, NaN, ...
+            'Marker', 'o', 'MarkerSize', markersize, ...
+            'MarkerEdgeColor', bodyColors{4}, 'MarkerFaceColor', bodyColors{4});
         % Pre-allocate text graphic object
         h_text_sol = text(ax_sol, NaN, NaN, NaN + bodySize(4)*1.2, ...
                         bodyNames{4}, 'Color', bodyColors{4}, ...
-                        'FontSize', 10, 'HorizontalAlignment', 'center');
-        end
+                        'EdgeColor', bodyColors{4});
+        stylePlot(ax_sol);
+
         hold(ax_sol, 'off');
+
         % Options - solved
         xlabel(ax_sol, 'X [km]'); ylabel(ax_sol, 'Y [km]'); zlabel(ax_sol, 'Z [km]');
         title(ax_sol, 'Trajectory - solved', 'color', 'w');
-        stylePlot(ax_sol, onlyEarth_flag, sphere_flag);
-        % xmin = min(x(idx, :));
-        % xmax = max(x(idx, :));
-        % ymin = min(x(idx +1, :));
-        % ymax = max(x(idx +1, :));
-        % zmin = min(x(idx +2, :));
-        % zmax = max(x(idx +2, :));
-        % xlim(ax_sol, [xmin xmax]);
-        % ylim(ax_sol, [ymin ymax]);
-        % zlim(ax_sol, [zmin zmax]);
+        xmin = min(x(idx, :));
+        xmax = max(x(idx, :));
+        ymin = min(x(idx +1, :));
+        ymax = max(x(idx +1, :));
+        zmin = min(x(idx +2, :));
+        zmax = max(x(idx +2, :));
+        xlim(ax_sol, [xmin xmax]);
+        ylim(ax_sol, [ymin ymax]);
+        zlim(ax_sol, [zmin zmax]);
 
         % Initialize trajectory vector
         xx = [];
@@ -377,18 +342,16 @@ if animation_flag
                 ry = [ry; Trajectory.Earth(2, i)];
                 rz = [rz; Trajectory.Earth(3, i)];
 
-                % Update body vector
-                if sphere_flag
-                [X, Y, Z] = createBody(bodyR, bodyPhi, bodyTheta, bodySize(4), ...
-                    [rx(end), ry(end), rz(end)]);
-                end
-
                 % Update plot
                 set(h_plot_ephem, 'XData', rx, 'YData', ry, 'ZData', rz);
-                if sphere_flag
-                set(h_surf_ephem, 'XData', X, 'YData', Y, 'ZData', Z);
-                set(h_text_ephem, 'Position', [rx(end), ry(end), rz(end) + bodySize(4)*1.2]);
-                end
+
+                set(h_body_ephem, 'XData', rx(end), 'YData', ry(end), 'ZData', rz(end));
+
+                set(h_text_ephem, 'Position', ...
+                    [rx(end) + bodyRadius(4)*markersize*50, ...
+                    ry(end) + bodyRadius(4)*markersize*50,...
+                    rz(end) + bodyRadius(4)*markersize*50]);
+                
             end
            
             % Animate solved solution
@@ -396,17 +359,16 @@ if animation_flag
             xx = [xx; x(idx, i)];
             xy = [xy; x(idx+1, i)];
             xz = [xz; x(idx+2, i)];
-
-            % Update body vector
-            [X, Y, Z] = createBody(bodyR, bodyPhi, bodyTheta, bodySize(4), ...
-                [xx(end), xy(end), xz(end)]);
             
             % Update plot
             set(h_plot_sol, 'XData', xx, 'YData', xy, 'ZData', xz);
-            if sphere_flag
-            set(h_surf_sol, 'XData', X, 'YData', Y, 'ZData', Z);
-            set(h_text_sol, 'Position', [xx(end), xy(end), xz(end) + bodySize(4)*1.2]);
-            end
+
+            set(h_body_sol, 'XData', xx(end), 'YData', xy(end), 'ZData', xz(end));
+
+            set(h_text_sol, 'Position',...
+                [xx(end) + bodyRadius(4)*markersize*50,...
+                xy(end) + bodyRadius(4)*markersize*50,...
+                xz(end) + bodyRadius(4)*markersize*50]);
 
             drawnow;
 
@@ -417,39 +379,4 @@ if animation_flag
     else
         %% 
     end
-end
-
-
-%% Functions
-function [X, Y, Z] = createBody(r, phi, theta, size, pos)
-
-X = size * r + pos(1);
-Y = size * phi + pos(2);
-Z = size * theta + pos(3);
-
-end
-
-function stylePlot(ax, onlyEarth_flag, sphere_flag)
-
-% Options for plot
-grid on;
-if onlyEarth_flag
-    leg = legend(ax, 'Earth trajectory');
-else 
-    leg = legend(ax, bodyNames);
-end
-set(ax, 'Color', 'k');            % black background
-set(ax, 'XColor', 'w', 'YColor', 'w', 'ZColor', 'w'); % white axes
-set(ax, 'GridColor', 'w');        % white grid
-set(leg, 'TextColor', 'w');        % white legend
-set(leg, 'EdgeColor', 'w');
-set(leg, 'Color', 'k');
-
-if sphere_flag
-camlight(ax)
-lighting(ax, 'gouraud');
-axis(ax, 'equal');
-axis(ax, 'tight');
-end
-
 end

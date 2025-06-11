@@ -35,7 +35,46 @@ Below is a brief overview of the implemented method:
   Note: in our case, the system is time-invariant:
       f = f(x), not f = f(t, x)
 
-### 
+
+## Repository description
+The whole repository is composed of four files, respectively:
+- main.m: main script. Users will run just this file;
+- extractEphemeris.m: function responsible for the ephemeris' extractions of the bodies involved in the system; taken directly from NASA JPL Archives
+- BuildFunction.m: function resposible for the construction of the right-hand side of the system of differential equations
+- stylePlot.m: function that manages all the optimal styling options required for a better visualization of the results.
+
+A better description of the main.m file is proposed.
+main.m is the only script that the user will have to run. In order to not compromise the code, it is highly suggested to do not edit other functions.  
+The script is divided into sections:
+### Customize:
+At the right beginning of the file, the user can set some parameters and flags in order to customize the plotting procedure.
+The flags presented are:
+- unit [0, 1]: set the unit of measurements between 1: [day, Km/day] and 0: [seconds, Km/s]. It is suggested to set input = 1;
+- frame [0, 1]: set the origin of the reference frame between 1: [Solar system baricenter] and 0: [Sun];
+- plot_flag [0, 1]: choose to plot the trajectories computed right after the integration of the system of differential equations;
+- animation_flag [0, 1]: choose to produce an animation of the Earth trajectory evolution through time;
+- onlyEarth_flag [0, 1]: choose to display only the Earth trajectory on the plots
+- onlyIC_flag [0, 1]: choose to extract from the ephemeris only the initial conditions for each body, and not the whole data. It is highly recommended when, for instance,
+the integration interval is very big (tens of years), and the extraction process might take a while. If selected, then the comparison between the solved trajectory and the ephemeris won't be showed.
+
+### Parameters:
+This section contains some definitions of constant parameters (they don't require to be changed), such as the mass of the bodies, the radius, Universal Gravitational Constant, UA and so on.
+
+### Problem Initialization & Solve differential system
+The problem is finally initialized and numerically solved throught the implementation of the RK4 integration method.
+At the end of the integration, the matrix "x" of the system's states is outputted. In particular:
+- rows -> Coordinate integrated (position and velocity of the body)
+- columns -> valuation throught time
+
+### Plot (& animation)
+This final section is dedicated to the plotting logic.
+Three kinds of plots are proposed:
+- Earth trajectory (eventually compared with the Ephemeris previously extracted)
+- Trajectories of all the bodies of the Solar System
+- Animation of the Earth trajectory
+
+## Exemples
+Here's are reported some self-explaining plot examples.
 
           
 

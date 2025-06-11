@@ -76,7 +76,8 @@ Three kinds of plots are proposed:
 ## Exemples
 Here's are reported some self-explaining plot examples.
 
-          
+          <img width="1615" alt="compare_earth" src="https://github.com/user-attachments/assets/e83b82aa-d2e1-4580-80ed-c7406ba8178e" />
+
 
 
 

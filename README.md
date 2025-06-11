@@ -75,9 +75,8 @@ Three kinds of plots are proposed:
 
 ## Exemples
 Here's are reported some self-explaining plot examples.
-
-          <img width="1615" alt="compare_earth" src="./assets/earth.png" />
-          <img width="1615" alt="compare_earth" src="./assets/all_bodies.png" />
+![compare_earth](./assets/earth.png)
+![all_bodies](./assets/all_bodies.png)
 
 
 
